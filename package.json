@@ -1,0 +1,14 @@
+{
+  "name": "hwaseong-mokdong-library-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "화성시립도서관 목동이음터 소장/대출 상태를 한눈에 보는 로컬 대시보드",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  }
+}
