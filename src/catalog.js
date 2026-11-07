@@ -691,7 +691,7 @@ export function sortHoldings(rows) {
 }
 
 export async function fetchWorkHoldings(work, options = {}) {
-  const { fresh = false, maxEditions = 10 } = options;
+  const { fresh = false, maxEditions = 3 } = options;
   const editions = work.editions
     .filter((edition) => edition.speciesKey)
     .slice(0, maxEditions);
@@ -706,7 +706,7 @@ export async function fetchWorkHoldings(work, options = {}) {
   }
 
   const errors = [];
-  const results = await mapLimit(editions, 2, async (edition) => {
+  const results = await mapLimit(editions, 3, async (edition) => {
     try {
       const rows = await fetchHoldings(edition.speciesKey, { fresh });
       return rows.map((row) => ({ ...row, editionIsbn: edition.isbn }));
