@@ -270,6 +270,11 @@ async function fetchHtml(url, { method = 'GET', body, referer, timeout = 20_000,
   if (lastError?.name === 'AbortError') {
     throw new Error('도서관 사이트 응답이 너무 느립니다. 잠시 후 다시 시도해 주세요.');
   }
+  if (lastError && !lastError.status) {
+    const cause = lastError.cause?.code ?? lastError.cause?.message ?? lastError.message;
+    console.error(`[catalog] ${url} 연결 실패: ${cause}`);
+    throw new Error(`도서관 사이트에 연결하지 못했습니다 (${cause}).`);
+  }
   throw lastError ?? new Error('도서관 사이트에 연결하지 못했습니다.');
 }
 
