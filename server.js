@@ -133,10 +133,10 @@ async function handleSearch(req, res) {
     return;
   }
 
-  const limitPerQuery = clampInt(body.limitPerQuery, 20, 300, 100);
-  const maxTotalWorks = clampInt(body.maxTotalWorks, 20, 600, 300);
+  const limitPerQuery = clampInt(body.limitPerQuery, 20, 300, 50);
+  const maxTotalWorks = clampInt(body.maxTotalWorks, 20, 600, 100);
   const maxPages = clampInt(body.maxPages, 1, 30, 20);
-  const maxEditions = clampInt(body.maxEditions, 1, 20, 10);
+  const maxEditions = clampInt(body.maxEditions, 1, 20, 3);
   const mode = body.mode === 'all' ? 'all' : 'title';
   const fresh = body.fresh === true;
 
@@ -250,7 +250,7 @@ async function handleSearch(req, res) {
     });
 
     let done = 0;
-    await mapLimit(allWorks, 4, async (work) => {
+    await mapLimit(allWorks, 6, async (work) => {
       if (aborted) return;
       try {
         const result = await fetchWorkHoldings(work, { fresh, maxEditions });
