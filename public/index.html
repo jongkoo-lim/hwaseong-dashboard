@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="화성시립도서관 카탈로그에서 목동이음터 소장 여부, 대출 상태, 상호대차 가능 여부를 한 번에 확인하는 대시보드"
+    />
+    <title>목동이음터 도서 조회 · 화성시립도서관</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero-inner">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v18H6.5A2.5 2.5 0 0 1 4 18.5z" />
+              <path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H19" />
+              <path d="M8 7h7M8 10.5h5" />
+            </svg>
+          </div>
+          <div>
+            <p class="eyebrow">화성시립도서관 카탈로그</p>
+            <h1>목동이음터 <span>도서 조회</span></h1>
+            <p class="hero-sub">
+              책 제목을 넣으면 목동이음터 소장 여부, 대출 상태, 상호대차 가능 여부까지
+              한 번에 확인합니다.
+            </p>
+          </div>
+        </div>
+        <div class="hero-meta">
+          <span class="live-dot" aria-hidden="true"></span>
+          실시간 카탈로그 조회
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="search-card" aria-labelledby="search-title">
+        <div class="photo-extract photo-on-top">
+          <div class="photo-head">
+            <div>
+              <h3>📷 사진으로 검색하기</h3>
+              <p>독서플랜 사진 같은 스크린샷을 넣으면 책 제목만 뽑아서 바로 검색창에 넣습니다. 빨간 딱지(첫째)와 초록 딱지(둘째)가 둘 다 붙은 책만 자동으로 제외하고, 첫째만/둘째만/딱지 없는 책은 모두 넣습니다. 뽑은 제목을 확인한 뒤 아래 <strong>도서 조회</strong>를 누르세요.</p>
+            </div>
+          </div>
+
+          <label class="photo-drop" id="photoDropBox" for="photoInput" tabindex="0">
+            <input type="file" id="photoInput" class="photo-file-input" accept="image/png,image/jpeg,image/webp,image/gif" />
+            <span class="photo-icon" aria-hidden="true">📷</span>
+            <span class="photo-title">사진을 여기로 끌거나 클릭해서 선택</span>
+            <span class="photo-desc">JK 카테고리, (숫자), 원서 같은 꼬리표는 제목에서 뺍니다 · 스크린샷은 붙여넣기(Ctrl+V)도 됩니다</span>
+            <span class="btn small photo-pick-label" id="photoPickBtn">사진 선택하기</span>
+          </label>
+
+          <div id="photoPreviewBox" class="photo-preview-box" hidden>
+            <img id="photoPreviewImg" class="photo-preview-img" alt="올린 사진 미리보기" />
+            <div class="photo-preview-info">
+              <p id="photoMeta" class="photo-meta"></p>
+              <p id="ocrStatus" class="ocr-status" aria-live="polite"></p>
+              <div class="photo-preview-actions">
+                <button type="button" class="btn small" id="photoChangeBtn">다른 사진으로 바꾸기</button>
+                <button type="button" class="btn ghost small" id="photoRemoveBtn">사진 지우기</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="ocrResults" class="ocr-results" hidden>
+            <div class="ocr-list-head">
+              <strong>뽑은 제목</strong>
+              <span id="ocrCount"></span>
+            </div>
+            <ul id="ocrList" class="ocr-list"></ul>
+            <div class="ocr-add">
+              <input type="text" id="ocrAddInput" placeholder="누락된 책 제목을 직접 입력" spellcheck="false" aria-label="직접 추가할 제목" />
+              <button type="button" class="btn small" id="ocrAddTitleBtn">목록에 추가</button>
+            </div>
+            <div class="ocr-actions">
+              <button type="button" class="btn small" id="ocrAddBtn">체크한 제목만 검색창에 넣기</button>
+              <button type="button" class="btn primary small" id="ocrSearchBtn">바로 조회</button>
+            </div>
+            <p class="ocr-note">제목이 틀리면 직접 고쳐서 넣으세요. 둘 다 읽은 책만 체크가 꺼져 있습니다.</p>
+            <details id="ocrRawBox" class="ocr-raw" hidden>
+              <summary>읽은 글자 원문 (제목이 안 뽑혔을 때 직접 고치기)</summary>
+              <textarea id="ocrRawText" rows="6" spellcheck="false" aria-label="OCR 원문"></textarea>
+              <div class="ocr-actions">
+                <button type="button" class="btn small" id="ocrRawApply">원문으로 다시 뽑기</button>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="search-head">
+          <div>
+            <h2 id="search-title">찾고 싶은 책</h2>
+            <p>한 줄에 한 권씩 입력하세요. 제목 일부만 입력해도 관련 자료를 찾습니다.</p>
+          </div>
+          <span class="shortcut-hint">Ctrl / ⌘ + Enter</span>
+        </div>
+
+        <form id="searchForm" novalidate>
+          <div class="textarea-wrap">
+            <textarea
+              id="queryInput"
+              rows="5"
+              spellcheck="false"
+              placeholder="예)&#10;채식주의자&#10;불편한 편의점&#10;데미안"
+              aria-label="책 제목 목록"
+            ></textarea>
+            <div class="textarea-footer">
+              <span id="queryCount">0권 입력</span>
+            </div>
+          </div>
+
+          <div class="example-row">
+            <span class="example-label">예시</span>
+            <button type="button" class="chip example" data-example="채식주의자">채식주의자</button>
+            <button type="button" class="chip example" data-example="불편한 편의점">불편한 편의점</button>
+            <button type="button" class="chip example" data-example="데미안">데미안</button>
+            <button type="button" class="chip example" data-example="어린 왕자">어린 왕자</button>
+            <button type="button" class="chip example" data-example="해리 포터">해리 포터</button>
+          </div>
+
+          <details class="options">
+            <summary>검색 옵션</summary>
+            <div class="options-grid">
+              <fieldset class="fieldset">
+                <legend>검색 방식</legend>
+                <label class="radio">
+                  <input type="radio" name="mode" value="title" checked />
+                  <span>제목에 검색어 포함 <em>권장</em></span>
+                </label>
+                <label class="radio">
+                  <input type="radio" name="mode" value="all" />
+                  <span>도서관 검색 결과 전체</span>
+                </label>
+              </fieldset>
+
+              <label class="field">
+                <span>검색어당 최대</span>
+                <select id="limitPerQuery">
+                  <option value="50">50권</option>
+                  <option value="100" selected>100권</option>
+                  <option value="200">200권</option>
+                  <option value="300">300권</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>전체 최대</span>
+                <select id="maxTotalWorks">
+                  <option value="100">100권</option>
+                  <option value="200">200권</option>
+                  <option value="300" selected>300권</option>
+                  <option value="500">500권</option>
+                </select>
+              </label>
+
+              <div class="field">
+                <span>자료 범위</span>
+                <label class="check">
+                  <input type="checkbox" id="includeSpecial" checked />
+                  <span>점자·큰글자 포함</span>
+                </label>
+                <label class="check">
+                  <input type="checkbox" id="includeSmall" checked />
+                  <span>작은도서관 포함</span>
+                </label>
+              </div>
+            </div>
+          </details>
+
+          <div class="actions">
+            <button type="submit" class="btn primary" id="searchBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3.5-3.5" />
+              </svg>
+              <span>도서 조회</span>
+            </button>
+            <button type="button" class="btn ghost" id="cancelBtn" hidden>조회 중단</button>
+            <button type="button" class="btn ghost" id="resetBtn">초기화</button>
+          </div>
+        </form>
+
+        <div id="errorBanner" class="error-banner" role="alert" hidden></div>
+
+        <div id="progressPanel" class="progress-panel" hidden aria-live="polite">
+          <div class="progress-top">
+            <span id="progressLabel">조회 준비 중…</span>
+            <span id="progressPercent">0%</span>
+          </div>
+          <div class="progress-track">
+            <div id="progressBar" class="progress-bar"></div>
+          </div>
+          <p id="progressDetail" class="progress-detail"></p>
+        </div>
+      </section>
+
+      <section id="emptyLanding" class="empty-landing">
+        <div class="step">
+          <span class="step-num">1</span>
+          <div>
+            <strong>책 제목 입력</strong>
+            <p>한 줄에 한 권씩. 정확한 제목이 아니어도 됩니다.</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-num">2</span>
+          <div>
+            <strong>카탈로그 조회</strong>
+            <p>화성시립도서관 전체 소장 정보를 실시간으로 가져옵니다.</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-num">3</span>
+          <div>
+            <strong>상태 확인</strong>
+            <p>목동 비치·대출중·타관 소장·대출불가를 색으로 구분합니다.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="summarySection" class="summary-section" hidden>
+        <div class="summary-head">
+          <div>
+            <h2>조회 결과</h2>
+            <p id="summaryMeta"></p>
+            <p id="summaryExtra" class="summary-extra"></p>
+          </div>
+          <div class="summary-actions">
+            <button type="button" class="btn small" id="refreshBtn">새로고침</button>
+            <button type="button" class="btn small" id="csvBtn">CSV 저장</button>
+          </div>
+        </div>
+
+        <div class="stat-grid" id="statGrid"></div>
+        <div id="warningList" class="warning-list" hidden></div>
+      </section>
+
+      <section id="resultsSection" class="results-section" hidden>
+        <div class="toolbar">
+          <div class="tabs" role="group" aria-label="상태 필터" id="statusTabs"></div>
+          <div class="toolbar-right">
+            <span class="sort-note">청구기호순</span>
+          </div>
+        </div>
+
+        <div id="queryFilter" class="query-filter" hidden></div>
+        <p id="resultMeta" class="result-meta"></p>
+        <div id="bookList" class="book-list"></div>
+        <div id="emptyState" class="empty-state" hidden></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>
+        화성시립도서관 공개 카탈로그를 조회합니다. 표시되는 대출 상태는 조회 시점 기준이며,
+        실제 대출 가능 여부는 도서관 사정에 따라 달라질 수 있습니다.
+      </p>
+      <p class="footer-target">기준 도서관 · 목동이음터</p>
+    </footer>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+    <div id="coverEditor" class="cover-editor" hidden>
+      <div class="cover-editor-backdrop" data-action="close-cover-editor"></div>
+      <div class="cover-editor-card" role="dialog" aria-modal="true" aria-labelledby="coverEditorTitle">
+        <div class="cover-editor-head">
+          <div>
+            <h3 id="coverEditorTitle">표지 이미지 추가</h3>
+            <p id="coverEditorBook" class="cover-editor-book"></p>
+          </div>
+          <button type="button" class="icon-btn" data-action="close-cover-editor" aria-label="닫기">×</button>
+        </div>
+
+        <div class="cover-editor-body">
+          <div class="cover-editor-preview">
+            <img id="coverEditorPreview" alt="" hidden />
+            <div id="coverEditorEmpty" class="cover-editor-empty">
+              <span aria-hidden="true">🖼</span>
+              <p>이미지를 선택하면<br />여기에 미리보기가 표시됩니다</p>
+            </div>
+          </div>
+
+          <div class="cover-editor-controls">
+            <label class="cover-file-box" id="coverDropBox">
+              <input type="file" id="coverFileInput" accept="image/png,image/jpeg,image/webp,image/gif" hidden />
+              <span class="cover-file-title">이미지 파일 선택 또는 드래그</span>
+              <span class="cover-file-desc">10MB 이하 이미지 · 자동으로 적당한 크기로 저장됩니다</span>
+            </label>
+
+            <label class="cover-url-label" for="coverUrlInput">이미지 URL</label>
+            <div class="cover-url-row">
+              <input type="url" id="coverUrlInput" placeholder="https://.../cover.jpg" inputmode="url" />
+              <button type="button" class="btn small" id="coverUrlApply">URL 적용</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="cover-editor-foot">
+          <button type="button" class="btn ghost danger" id="coverRemoveBtn">직접 추가한 표지 제거</button>
+          <span class="cover-editor-spacer"></span>
+          <button type="button" class="btn ghost" data-action="close-cover-editor">취소</button>
+          <button type="button" class="btn primary" id="coverSaveBtn">표지로 적용</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>
